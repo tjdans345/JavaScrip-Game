@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+
+    </style>
+
+</head>
+<body>
+
+<div align="center">
+
+    <h1>고기예찬 고기예찬 고기예찬</h1>
+
+</div>
+
+<div>
+    <canvas id="myCanvas" width="980" height="720">
+
+
+    </canvas>
+</div>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<div align="center">
+    <button style="
+  background-color: blue;
+    border: none;
+    color: white;
+    padding: 90px 150px;
+     text-align: center;
+     text-decoration: none;
+     display: inline-block;
+     font-size: 16px;
+     margin: 4px 2px;
+    cursor: pointer;"
+            onclick="test()"
+            id="left"> <<<
+    </button> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <button style="
+  background-color: blue;
+    border: none;
+    color: white;
+    padding: 90px 150px;
+     text-align: center;
+     text-decoration: none;
+     display: inline-block;
+     font-size: 16px;
+     margin: 4px 2px;
+    cursor: pointer;"
+            onclick="test2()"
+            id="right"
+    > >>>
+    </button>
+
+</div>
+<script>
+
+    //버튼 이벤트 추가한 부분
+    var leftEle = document.querySelector("#left");
+    var rightEle = document.querySelector("#right");
+    var isPressed = false;
+
+    leftEle.addEventListener('mouseup', function (event) {
+        isPressed = false;
+    });
+
+    leftEle.addEventListener('mousedown', function (event) {
+       isPressed = true;
+        testInterval('1');
+    });
+
+    rightEle.addEventListener('mouseup', function (event) {
+        isPressed = false;
+    });
+
+    rightEle.addEventListener('mousedown', function (event) {
+        isPressed = true;
+        testInterval('-1');
+    });
+
+    function testInterval(action) {
+        if(isPressed) {
+            if(action === '1') {
+                paddleX += -200;
+            }
+
+            if(action === '-1') {
+                paddleX += 200;
+            }
+
+            setTimeout(function () {
+                testInterval(action);
+            }, 200)
+        }
+    }
+    //버튼 이벤트 추가한 부분 끝
+
+    var canvas = document.getElementById("myCanvas")
+    var ctx = canvas.getContext("2d");
+    var ballRadius = 10;
+    // var ballRadius2 = 10;
+
+    // 공위치 변수
+    var x = canvas.width / 2;
+    var y = canvas.height - 30;
+
+    //패들 변수
+    var paddleHeight = 10;
+    var paddleWidth = 150;
+    var paddleX = (canvas.width - paddleWidth) / 2;
+
+    //키보드 변수
+    var rightPressed = false;
+    var leftPressed = false;
+
+    //벽돌 변수
+    var brickRowCount = 5;
+    var brickColumnCount = 11;
+    var brickWidth = 75;
+    var brickHeight = 20;
+    var brickPadding = 10;
+    var brickOffsetTop = 30;
+    var brickOffsetLeft = 30;
+
+
+    var bricks = [];
+    for (var c = 0; c < brickColumnCount; c++) {
+        bricks[c] = [];
+        for (var r = 0; r < brickRowCount; r++) {
+            bricks[c][r] = {x: 0, y: 0, status: 1};
+        }
+    }
+
+    // var x2 = canvas.width/2;
+    // var y2 = canvas.height-30;
+    // var x3 = canvas.width/3;
+    // var y3 = canvas.height-50;
+    // var x4 = canvas.width/7;
+    // var y4 = canvas.height-70;
+    // var x5 = canvas.width/4;
+    // var y5 = canvas.height-80;
+    // var x6 = canvas.width/5;
+    // var y6 = canvas.height-10;
+    //
+    var dx = 3;
+    var dy = -3;
+    // var dx2 = 3;
+    // var dy2 = -3;
+    // var dx3 = 2;
+    // var dy3 = -2;
+    // var dx4 = 4;
+    // var dy4 = -4;
+    // var dx5 = 3;
+    // var dy5 = -3.5;
+    // var dx6 = 5;
+    // var dy6 = -5;
+
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+
+    function keyDownHandler(e) {
+        if (e.keyCode === 39) {
+            rightPressed = true;
+        } else if (e.keyCode === 37) {
+            leftPressed = true;
+        }
+
+    }
+
+    function keyUpHandler(e) {
+        if (e.keyCode === 39) {
+            rightPressed = false;
+        } else if (e.keyCode === 37) {
+            leftPressed = false;
+        }
+    }
+
+    function collisionDetection() {
+        for (var c = 0; c < brickColumnCount; c++) {
+            for (var r = 0; r < brickRowCount; r++) {
+                var b = bricks[c][r];
+                if (b.status === 1) {
+                    if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+                        dy = -dy;
+                        b.status = 0;
+                    }
+                }
+            }
+        }
+    }
+
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+        ctx.fileStyle = "#0095DD";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawBricks() {
+        for (var c = 0; c < brickColumnCount; c++) {
+
+            for (var r = 0; r < brickRowCount; r++) {
+                if (bricks[c][r].status === 1) {
+                    var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+                    var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
+                    bricks[c][r].x = brickX
+                    bricks[c][r].y = brickY
+                    ctx.beginPath();
+                    ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                    ctx.fillStyle = "#0095DD";
+                    ctx.fill();
+                    ctx.closePath();
+                }
+            }
+        }
+    }
+
+
+    //
+    // function drawBall2() {
+    //     ctx.beginPath();
+    //     ctx.arc(x2, y2, ballRadius2, 0, Math.PI*2);
+    //     ctx.fillStyle = "#d7fd9f";
+    //     ctx.fill();
+    //     ctx.closePath();
+    // }
+    //
+    // function drawBall3() {
+    //     ctx.beginPath();
+    //     ctx.arc(x3, y3, ballRadius, 0, Math.PI*2);
+    //     ctx.fillStyle = "#d69aee";
+    //     ctx.fill();
+    //     ctx.closePath();
+    // }
+    //
+    // function drawBall4() {
+    //     ctx.beginPath();
+    //     ctx.arc(x4, y4, ballRadius, 0, Math.PI*2);
+    //     ctx.fillStyle = "#f3dc9d";
+    //     ctx.fill();
+    //     ctx.closePath();
+    // }
+    //
+    // function drawBall5() {
+    //     ctx.beginPath();
+    //     ctx.arc(x5, y5, ballRadius, 0, Math.PI*2);
+    //     ctx.fillStyle = "#b9acf6";
+    //     ctx.fill();
+    //     ctx.closePath();
+    // }
+    //
+    // function drawBall6() {
+    //     ctx.beginPath();
+    //     ctx.arc(x6, y6, ballRadius, 0, Math.PI*2);
+    //     ctx.fillStyle = "#ecc49b";
+    //     ctx.fill();
+    //     ctx.closePath();
+    // }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBricks()
+        drawBall();
+        drawPaddle();
+        collisionDetection();
+        // drawBall2();
+        // drawBall3();
+        // drawBall4();
+        // drawBall5();
+        // drawBall6();
+
+
+        // if(y + dy <0 ) {
+        //     dy= -dy;
+        // }
+        // if(y + dy > canvas.height) {
+        //     dy = -dy;
+        // }
+
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+            dx = -dx;
+        }
+
+        if (y + dy < ballRadius) {
+            dy = -dy;
+        } else if (y + dy > canvas.height - ballRadius) {
+            if (x > paddleX && x < paddleX + paddleWidth) {
+
+                dy = -dy;
+                if (dx < 9 && dy > -9) {
+                    dx += 1;
+                    dy += -1;
+                }
+
+            } else {
+                alert("으잉? 고기예찬 ~ ")
+                document.location.reload();
+            }
+
+        }
+
+        if (rightPressed && paddleX < canvas.width - paddleWidth) {
+            paddleX += 7;
+        }
+
+        if (leftPressed && paddleX > 0) {
+            paddleX -= 7;
+        }
+
+        // if ( x2 + dx2 > canvas.width-ballRadius2 || x2 + dx2 < ballRadius2) {
+        //     dx2 = -dx2;
+        // }
+        //
+        // if ( y2 + dy2 > canvas.height-ballRadius2 || y2 + dy2 < ballRadius2) {
+        //     dy2 = -dy2;
+        // }
+        //
+        // if ( x3 + dx3 > canvas.width-ballRadius || x3 + dx3 < ballRadius) {
+        //     dx3 = -dx3;
+        // }
+        //
+        // if ( y3 + dy3 > canvas.height-ballRadius || y3 + dy3 < ballRadius) {
+        //     dy3 = -dy3;
+        // }
+        //
+        // if ( x4 + dx4 > canvas.width-ballRadius || x4 + dx4 < ballRadius) {
+        //     dx4 = -dx4;
+        // }
+        //
+        // if ( y4 + dy4 > canvas.height-ballRadius || y4 + dy4 < ballRadius) {
+        //     dy4 = -dy4;
+        // }
+        //
+        // if ( x5 + dx5 > canvas.width-ballRadius || x5 + dx5 < ballRadius) {
+        //     dx5 = -dx5;
+        // }
+        //
+        // if ( y5 + dy5 > canvas.height-ballRadius || y5 + dy5 < ballRadius) {
+        //     dy5 = -dy5;
+        // }
+        //
+        // if ( x6 + dx6 > canvas.width-ballRadius || x6 + dx6 < ballRadius) {
+        //     dx6 = -dx6;
+        // }
+        //
+        // if ( y6 + dy6 > canvas.height-ballRadius || y6 + dy6 < ballRadius) {
+        //     dy6 = -dy6;
+        // }
+
+
+        x += dx;
+        y += dy;
+
+        // x2 += dx2;
+        // y2 += dy2;
+        //
+        // x3 += dx3;
+        // y3 += dy3;
+        //
+        // x4 += dx4;
+        // y4 += dy4;
+        //
+        // x5 += dx5;
+        // y5 += dy5;
+        //
+        // x6 += dx6;
+        // y6 += dy6;
+    }
+
+
+    //실행 함수
+    setInterval(draw, 10);
+
+
+    // ctx.beginPath();
+    // ctx.rect(20, 40, 50, 50);
+    // ctx.fillStyle = "green";
+    // ctx.fill();
+    // ctx.closePath();
+    //
+    // ctx.beginPath();
+    // ctx.arc(240,160,20,0, Math.PI*2, false);
+    // ctx.fillStyle = "blue";
+    // ctx.fill();
+    // ctx.strokeStyle = "rgba(17,255,0,0.5)";
+    // ctx.stroke();
+    // ctx.closePath();
+
+
+</script>
+
+</body>
+</html>
